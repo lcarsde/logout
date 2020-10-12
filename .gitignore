@@ -1,0 +1,10 @@
+.project
+.settings
+.vscode
+.gradle
+build
+gradlew.bat
+.idea
+**/*.iml
+venv
+**/__pycache__
