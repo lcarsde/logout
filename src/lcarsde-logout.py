@@ -104,6 +104,10 @@ class LcarsdeLogout(Gtk.Window):
         self.get_style_context().add_class("window")
         self.get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
+    def view_changed(self, widget, event, data=None):
+        adj = self.scroll_container.get_vadjustment()
+        adj.set_value(0)
+
 
 if __name__ == "__main__":
     win = LcarsdeLogout()
