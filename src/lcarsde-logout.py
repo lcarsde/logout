@@ -50,8 +50,8 @@ css = b'''
     background: #f96; /* for Ubuntu */
 }
 .button--c69 {
-    background-color: #f96;
-    background: #f96; /* for Ubuntu */
+    background-color: #c69;
+    background: #c69; /* for Ubuntu */
 }
 .category {
     font-family: 'Ubuntu Condensed', sans-serif;
@@ -97,6 +97,8 @@ class LcarsdeLogout(Gtk.Window):
 
         self.app_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
 
+        self.setup_buttons()
+
         self.scroll_container.add(self.app_container)
         self.add(self.scroll_container)
         self.connect('size-allocate', self.view_changed)
@@ -107,6 +109,22 @@ class LcarsdeLogout(Gtk.Window):
     def view_changed(self, widget, event, data=None):
         adj = self.scroll_container.get_vadjustment()
         adj.set_value(0)
+
+    def setup_buttons(self):
+        self.create_button("Shutdown", None, "c66")
+        self.create_button("Reboot", None, "f96")
+        self.create_button("Suspend", None, "c9c")
+        self.create_button("Lock Screen", None, "99c")
+        self.create_button("Logout", None, "f96")
+
+    def create_button(self, label, handler, color):
+        button = Gtk.Button(label=label)
+#        button.connect("clicked", handler)
+        button.set_alignment(1, 1)
+        button.get_style_context().add_class("button")
+        button.get_style_context().add_class("button--{}".format(color))
+        button.get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        self.app_container.add(button)
 
 
 if __name__ == "__main__":
