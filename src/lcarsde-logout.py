@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-
+from gi.repository import Gtk, Gio, GLib
 
 css = b'''
 .button {
@@ -111,20 +109,118 @@ class LcarsdeLogout(Gtk.Window):
         adj.set_value(0)
 
     def setup_buttons(self):
-        self.create_button("Shutdown", None, "c66")
-        self.create_button("Reboot", None, "f96")
-        self.create_button("Suspend", None, "c9c")
-        self.create_button("Lock Screen", None, "99c")
-        self.create_button("Logout", None, "f96")
+        handler = LcarsdeLogout.get_handler("Stop", "PowerOff")
+        if handler is not None:
+            self.create_button("Shutdown", handler, "c66")
+
+        handler = LcarsdeLogout.get_handler("Restart", "Reboot")
+        if handler is not None:
+            self.create_button("Reboot", handler, "f96")
+
+        handler = LcarsdeLogout.get_handler("Suspend", "Suspend")
+        if handler is not None:
+            self.create_button("Suspend", handler, "c9c")
+
+        handler = LcarsdeLogout.get_handler("Hibernate", "Hibernate")
+        if handler is not None:
+            self.create_button("Hibernate", handler, "c9c")
+
+        if LcarsdeLogout.is_lock_screen_available():
+            self.create_button("Lock Screen", LcarsdeLogout.lock_screen, "99c")
+
+        self.create_button("Logout", LcarsdeLogout.logout, "f96")
 
     def create_button(self, label, handler, color):
         button = Gtk.Button(label=label)
-#        button.connect("clicked", handler)
+        button.connect("clicked", handler)
         button.set_alignment(1, 1)
         button.get_style_context().add_class("button")
         button.get_style_context().add_class("button--{}".format(color))
         button.get_style_context().add_provider(self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self.app_container.add(button)
+
+    @staticmethod
+    def get_proxy(name, object_path, interface_name):
+        bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        return Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None, name, object_path, interface_name, None)
+
+    @staticmethod
+    def is_console_kit_method_available(method_name):
+        """
+        :param method_name: Stop or Restart
+        """
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
+                                        'org.freedesktop.ConsoleKit.Manager')
+        try:
+            result = proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
+        except GLib.GError:
+            return False
+        return result[0] == 'yes'
+
+    @staticmethod
+    def run_console_kit_method(method_name):
+        """
+        :param method_name: Stop or Restart
+        """
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
+                                        'org.freedesktop.ConsoleKit.Manager')
+
+        proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
+
+    @staticmethod
+    def is_systemd_method_available(method_name):
+        """
+        :param method_name: PowerOff, Reboot, Suspend or Hibernate
+        """
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1/Manager',
+                                        'org.freedesktop.login1.Manager')
+        try:
+            result = proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
+        except GLib.GError:
+            return False
+        return result[0] == 'yes'
+
+    @staticmethod
+    def run_systemd_method(method_name):
+        """
+        :param method_name: PowerOff, Reboot, Suspend or Hibernate
+        """
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1/Manager',
+                                        'org.freedesktop.login1.Manager')
+
+        parameter = GLib.Variant.new_tuple(GLib.Variant.new_boolean(True))
+        proxy.call_sync(method_name, parameter, Gio.DBusCallFlags.NONE, 100, None)
+
+    @staticmethod
+    def get_handler(console_kit_method, systemd_method):
+        """
+        :param console_kit_method:
+        :param systemd_method:
+        :return: handler for calling the action or None, if action is not available
+        """
+        if LcarsdeLogout.is_console_kit_method_available("Can" + console_kit_method):
+            return lambda: LcarsdeLogout.run_console_kit_method(console_kit_method)
+
+        elif LcarsdeLogout.is_systemd_method_available("Can" + systemd_method):
+            return lambda: LcarsdeLogout.run_systemd_method(systemd_method)
+
+        else:
+            return None
+
+    @staticmethod
+    def is_lock_screen_available():
+        # TODO implement check for xdg-screensaver
+        return False
+
+    @staticmethod
+    def lock_screen():
+        # TODO implement screen locking
+        pass
+
+    @staticmethod
+    def logout():
+        # TODO implement logout
+        pass
 
 
 if __name__ == "__main__":
