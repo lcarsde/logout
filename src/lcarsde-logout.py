@@ -109,19 +109,19 @@ class LcarsdeLogout(Gtk.Window):
         adj.set_value(0)
 
     def setup_buttons(self):
-        handler = LcarsdeLogout.get_handler("Stop", "PowerOff")
+        handler = LcarsdeLogout.get_action_handler("Stop", "PowerOff")
         if handler is not None:
             self.create_button("Shutdown", handler, "c66")
 
-        handler = LcarsdeLogout.get_handler("Restart", "Reboot")
+        handler = LcarsdeLogout.get_action_handler("Restart", "Reboot")
         if handler is not None:
             self.create_button("Reboot", handler, "f96")
 
-        handler = LcarsdeLogout.get_handler("Suspend", "Suspend")
+        handler = LcarsdeLogout.get_action_handler("Suspend", "Suspend")
         if handler is not None:
             self.create_button("Suspend", handler, "c9c")
 
-        handler = LcarsdeLogout.get_handler("Hibernate", "Hibernate")
+        handler = LcarsdeLogout.get_action_handler("Hibernate", "Hibernate")
         if handler is not None:
             self.create_button("Hibernate", handler, "c9c")
 
@@ -145,17 +145,22 @@ class LcarsdeLogout(Gtk.Window):
         return Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None, name, object_path, interface_name, None)
 
     @staticmethod
+    def is_method_available(proxy, method_name):
+        try:
+            result = proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
+        except GLib.GError:
+            return False
+        return result[0] == 'yes'
+
+    @staticmethod
     def is_console_kit_method_available(method_name):
         """
         :param method_name: Stop or Restart
         """
         proxy = LcarsdeLogout.get_proxy('org.freedesktop.ConsoleKit', '/org/freedesktop/ConsoleKit/Manager',
                                         'org.freedesktop.ConsoleKit.Manager')
-        try:
-            result = proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
-        except GLib.GError:
-            return False
-        return result[0] == 'yes'
+
+        return LcarsdeLogout.is_method_available(proxy, method_name)
 
     @staticmethod
     def run_console_kit_method(method_name):
@@ -174,11 +179,8 @@ class LcarsdeLogout(Gtk.Window):
         """
         proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1/Manager',
                                         'org.freedesktop.login1.Manager')
-        try:
-            result = proxy.call_sync(method_name, None, Gio.DBusCallFlags.NONE, 100, None)
-        except GLib.GError:
-            return False
-        return result[0] == 'yes'
+
+        return LcarsdeLogout.is_method_available(proxy, method_name)
 
     @staticmethod
     def run_systemd_method(method_name):
@@ -192,10 +194,10 @@ class LcarsdeLogout(Gtk.Window):
         proxy.call_sync(method_name, parameter, Gio.DBusCallFlags.NONE, 100, None)
 
     @staticmethod
-    def get_handler(console_kit_method, systemd_method):
+    def get_action_handler(console_kit_method, systemd_method):
         """
-        :param console_kit_method:
-        :param systemd_method:
+        :param console_kit_method: method name for action via ConsoleKit
+        :param systemd_method: method name for action via SystemD
         :return: handler for calling the action or None, if action is not available
         """
         if LcarsdeLogout.is_console_kit_method_available("Can" + console_kit_method):
