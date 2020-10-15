@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import gi
 import psutil
+import os
+import subprocess
+from multiprocessing import Process
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib
@@ -110,19 +113,19 @@ class LcarsdeLogout(Gtk.Window):
         adj.set_value(0)
 
     def setup_buttons(self):
-        handler = LcarsdeLogout.get_action_handler("Stop", "PowerOff")
+        handler = LcarsdeLogout.get_handler("Stop", "PowerOff")
         if handler is not None:
             self.create_button("Shutdown", handler, "c66")
 
-        handler = LcarsdeLogout.get_action_handler("Restart", "Reboot")
+        handler = LcarsdeLogout.get_handler("Restart", "Reboot")
         if handler is not None:
             self.create_button("Reboot", handler, "f96")
 
-        handler = LcarsdeLogout.get_action_handler("Suspend", "Suspend")
+        handler = LcarsdeLogout.get_handler("Suspend", "Suspend")
         if handler is not None:
             self.create_button("Suspend", handler, "c9c")
 
-        handler = LcarsdeLogout.get_action_handler("Hibernate", "Hibernate")
+        handler = LcarsdeLogout.get_handler("Hibernate", "Hibernate")
         if handler is not None:
             self.create_button("Hibernate", handler, "c9c")
 
@@ -178,7 +181,7 @@ class LcarsdeLogout(Gtk.Window):
         """
         :param method_name: PowerOff, Reboot, Suspend or Hibernate
         """
-        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1/Manager',
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1',
                                         'org.freedesktop.login1.Manager')
 
         return LcarsdeLogout.is_method_available(proxy, method_name)
@@ -188,14 +191,14 @@ class LcarsdeLogout(Gtk.Window):
         """
         :param method_name: PowerOff, Reboot, Suspend or Hibernate
         """
-        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1/Manager',
+        proxy = LcarsdeLogout.get_proxy('org.freedesktop.login1', '/org/freedesktop/login1',
                                         'org.freedesktop.login1.Manager')
 
         parameter = GLib.Variant.new_tuple(GLib.Variant.new_boolean(True))
         proxy.call_sync(method_name, parameter, Gio.DBusCallFlags.NONE, 100, None)
 
     @staticmethod
-    def get_action_handler(console_kit_method, systemd_method):
+    def get_handler(console_kit_method, systemd_method):
         """
         :param console_kit_method: method name for action via ConsoleKit
         :param systemd_method: method name for action via SystemD
@@ -212,13 +215,15 @@ class LcarsdeLogout(Gtk.Window):
 
     @staticmethod
     def is_lock_screen_available():
-        # TODO implement check for xdg-screensaver
-        return False
+        return any(
+            os.access(os.path.join(path, "xdg-screensaver"), os.X_OK)
+            for path in os.environ["PATH"].split(os.pathsep)
+        )
 
     @staticmethod
     def lock_screen():
-        # TODO implement screen locking
-        pass
+        p = Process(target=lambda c: subprocess.Popen(c), args=("xdg-screensaver lock",))
+        p.start()
 
     @staticmethod
     def logout():
