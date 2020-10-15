@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import gi
+import psutil
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib
@@ -221,8 +222,13 @@ class LcarsdeLogout(Gtk.Window):
 
     @staticmethod
     def logout():
-        # TODO implement logout
-        pass
+        """
+        Terminate lcarswm.kexe.
+        """
+        for process in psutil.process_iter():
+            if process.name() == "lcardwm.kexe":
+                process.terminate()
+                break
 
 
 if __name__ == "__main__":
