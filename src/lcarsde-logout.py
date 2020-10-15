@@ -23,10 +23,6 @@ css = b'''
     padding: 2px 20px;
     margin: 0;
 }
-.button--f90 {
-    background-color: #f90;
-    background: #f90; /* for Ubuntu */
-}
 .button--c9c {
     background-color: #c9c;
     background: #c9c; /* for Ubuntu */
@@ -39,21 +35,9 @@ css = b'''
     background-color: #c66;
     background: #c66; /* for Ubuntu */
 }
-.button--fc9 {
-    background-color: #fc9;
-    background: #fc9; /* for Ubuntu */
-}
-.button--99f {
-    background-color: #99f;
-    background: #99f; /* for Ubuntu */
-}
 .button--f96 {
     background-color: #f96;
     background: #f96; /* for Ubuntu */
-}
-.button--c69 {
-    background-color: #c69;
-    background: #c69; /* for Ubuntu */
 }
 .category {
     font-family: 'Ubuntu Condensed', sans-serif;
