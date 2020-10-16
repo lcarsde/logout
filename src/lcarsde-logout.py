@@ -206,7 +206,7 @@ class LcarsdeLogout(Gtk.Window):
 
     @staticmethod
     def lock_screen():
-        p = Process(target=lambda c: subprocess.Popen(c), args=("xdg-screensaver", "lock",))
+        p = Process(target=lambda c: subprocess.Popen(c.split()), args=("xdg-screensaver lock",))
         p.start()
 
     @staticmethod
