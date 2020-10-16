@@ -215,7 +215,7 @@ class LcarsdeLogout(Gtk.Window):
         Terminate lcarswm.kexe.
         """
         for process in psutil.process_iter():
-            if process.name() == "lcardwm.kexe":
+            if process.name() == "lcarswm.kexe":
                 process.terminate()
                 break
 
