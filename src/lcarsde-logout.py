@@ -120,7 +120,7 @@ class LcarsdeLogout(Gtk.Window):
 
     def create_button(self, label, handler, color):
         button = Gtk.Button(label=label)
-        button.connect("clicked", handler)
+        button.connect("clicked", lambda w: handler())
         button.set_alignment(1, 1)
         button.get_style_context().add_class("button")
         button.get_style_context().add_class("button--{}".format(color))
