@@ -1,0 +1,14 @@
+Source: lcarsde-logout
+Maintainer: Andreas Tennert <lcarsde@andreas-tennert.de>
+Section: misc
+Priority: optional
+Standards-Version: 4.5.0
+Build-Depends: debhelper (>= 9)
+
+Package: lcarsde-logout
+Architecture: any
+Depends: python3, python3-psutil, python3-gi
+Recommends: fonts-ubuntu
+Provides: lcarsde-logout
+Description: Menu of open applications for LCARSDE
+ https://lcarsde.github.io
