@@ -87,18 +87,18 @@ workflows:
       - deploy_ubuntu:
           context:
             - lcarsde-context
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+#          filters:
+#            tags:
+#              only: /.*/
+#            branches:
+#              ignore: /.*/
       - publish_github_release:
           context:
             - lcarsde-context
           requires:
             - deploy_ubuntu
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+#          filters:
+#            tags:
+#              only: /.*/
+#            branches:
+#              ignore: /.*/
