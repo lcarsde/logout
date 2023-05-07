@@ -27,6 +27,7 @@ jobs:
 
       # update content
       - run: cd lcarsde-logout && sed -i -e "s/^pkgver=[0-9\.]*$/pkgver=$CIRCLE_TAG/" PKGBUILD
+      - run: cd lcarsde-logout && sed -i -e "s/^pkgrel=[0-9]*$/pkgrel=1/" PKGBUILD
       - run: cd lcarsde-logout && updpkgsums
       - run: cd lcarsde-logout && makepkg --printsrcinfo > .SRCINFO
 
